@@ -62,7 +62,7 @@ export class Speech {
   start(){
     if(this.isListening()) return;
 
-    if(!this.recognition()){
+    if(!this.recognition){
       this.initRecognition();
     }
 

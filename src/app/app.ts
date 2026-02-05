@@ -29,7 +29,9 @@ export class App {
 
   toogleRecording(){
     if(this.speech.isListening()){
-
+        this.speech.stop();
+    }else{
+      this.speech.start();
     }
   }
 
@@ -56,7 +58,7 @@ export class App {
   }
 
   loadNotes(): Note[]{
-    const data = localStorage.getItem('speackeasy-notes');
+    const data = localStorage.getItem('speakeasy-notes');
     return data? JSON.parse(data) : [];
   }
 }
