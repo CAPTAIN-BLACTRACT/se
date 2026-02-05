@@ -12,20 +12,24 @@ export class Speech {
   text = signal('');
   error =  signal('');
 
+  private initialized = false;
 
-  constructor(){
-    this.initRecognition();
-  }
+
 
   initRecognition(){
     if ('webkitSpeechRecognition' in window){
       this.recognition = new webkitSpeechRecognition();
-      this.recognition.continue= true;
+      this.recognition.continuous= true;
       this.recognition.interimResults = true;
       this.recognition.lang = 'en-US';
 
-      this.recognition.onStart()=()=> this.isListening.set(true);
-      this.recognition.onEnd()=()=> this.isListening.set(false);
+      this.recognition.onstart=()=> this.isListening.set(true);
+      this.recognition.onend=()=>{ this.isListening.set(false);
+
+        if(this.initialized){
+          this.recognition.start();
+        }
+      };
 
       this.recognition.onerror = (event:any)=>{
         this.error.set(event.error);
@@ -33,7 +37,7 @@ export class Speech {
       };
 
       this.recognition.onresult = (event:any)=>{
-        let interinTranscript = '';
+        let interimTranscript = '';
         let finalTranscript ='';
 
         for(let i=event.resultIndex; i<event.results.length; ++i){
@@ -41,11 +45,11 @@ export class Speech {
             finalTranscript+= event.results[i][0].transcript;
 
           }else{
-            interimResults+= event.results[i][0].transcript;
+            interimTranscript+=event.results[i][0].transcript;
           }
         }
 
-        this.text.set(finalTranscript || interinTranscript);
+        this.text.set(finalTranscript || interimTranscript);
       };
 
     }else{
@@ -56,10 +60,18 @@ export class Speech {
   }
 
   start(){
+    if(this.isListening()) return;
+
+    if(!this.recognition()){
+      this.initRecognition();
+    }
+
     this.text.set('');
+    this.initialized=true;
     this.recognition?.start();
   }
   stop(){
+    this.initialized=false;
     this.recognition?.stop();
   }
 }

@@ -1,6 +1,6 @@
 import { Component, signal , inject, effect} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {Speech} from './speech.ts';
+import {Speech} from './speech';
 
 interface Note{
   id: string;
@@ -23,7 +23,7 @@ export class App {
 
   constructor(){
     effect(()=>{
-      localStorage.setItem('speakeasy-notes', JSON.stringigy(this.savedNotes()));
+      localStorage.setItem('speakeasy-notes', JSON.stringify(this.savedNotes()));
     });
   }
 
@@ -31,5 +31,32 @@ export class App {
     if(this.speech.isListening()){
 
     }
+  }
+
+  saveNote(){
+    if(!this.speech.text()) return;
+
+    const newNote: Note= {
+      id: crypto.randomUUID(),
+      content: this.speech.text(),
+      date: new Date()
+    };
+
+    this.savedNotes.update(notes => [newNote,...notes]);
+    this.speech.text.set('');
+  }
+
+  deleteNote(id:string){
+    this.savedNotes.update(notes=> notes.filter(n=> n.id !== id));
+  }
+
+  copyNote(text:string){
+    navigator.clipboard.writeText(text);
+    alert('copied');
+  }
+
+  loadNotes(): Note[]{
+    const data = localStorage.getItem('speackeasy-notes');
+    return data? JSON.parse(data) : [];
   }
 }
